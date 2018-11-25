@@ -1,0 +1,21 @@
+option java_package = "com.example.spark.hbase.generated";
+option java_outer_classname = "SingleSqlCount";
+option java_generic_services = true;
+option java_generate_equals_and_hash = true;
+option optimize_for = SPEED;
+
+message SqlCountRequest {
+    required string family = 1;
+    required string column = 2;
+    required string avroFilter = 3;
+}
+
+message SqlCountResponse {
+    required int64 count = 1 [default = 0];
+    required int64 byteSize = 2 [default = 0];
+}
+
+service SingleSqlCountService {
+  rpc getCount(SqlCountRequest)
+    returns (SqlCountResponse);
+}
