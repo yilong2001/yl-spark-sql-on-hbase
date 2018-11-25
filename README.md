@@ -5,7 +5,7 @@
 ## predicate-pushdown
  在HBase scan阶段完成列裁剪、谓词下推
 ## RDD 和 Coprocessor
- 在Saprk实现了 RDD，在 HBase 实现了自定义 Filter 和 Coprocessor
+ 在Saprk实现了 HBase RDD，在 HBase 实现了自定义 Filter 和 Coprocessor
 
 ## 1、HBaseRelationProvicer
 实现 spark sql source 的核心是实现一个 RelationProvider，继承 RelationProvider 实现 createRelation 接口。
