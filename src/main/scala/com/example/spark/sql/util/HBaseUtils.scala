@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import java.sql.SQLException
 import java.util
 
-import com.example.spark.sql.execution.avro.AvroConverter
+import com.example.spark.sql.execution.avro.AvroDataConverter
 import com.example.spark.sql.execution.hbase.{HBaseOptions, HBasePartition}
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord}
@@ -119,7 +119,7 @@ object HBaseUtils extends Logging {
             //val row = HBaseUtils.convertThriftObject(obj, schema)
             val avroDecoder = DecoderFactory.get.binaryDecoder(keyValue.getValue, null)
             val outResult = avroDatumReader.read(null, avroDecoder)
-            val row = AvroConverter.convert(outResult, schema)
+            val row = AvroDataConverter.convert(outResult, schema)
             row
           }
         } else {

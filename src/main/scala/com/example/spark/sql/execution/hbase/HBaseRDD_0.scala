@@ -11,7 +11,7 @@ import com.example.spark.demo.impl.transfer.FieldValuePair.FieldCompareType
 import com.example.spark.demo.impl.transfer.RowKeyTransfer.RowkeyFieldSortType
 import com.example.spark.demo.impl.transfer.{ConcatTransfer, FieldValuePair, RowKeyTransfer, ValueTransfer}
 import com.example.spark.hbase.filter.{SingleAvroFilter, SingleThriftFilter}
-import com.example.spark.sql.execution.avro.AvroSchema
+import com.example.spark.sql.execution.avro.AvroSchemaConverter
 import com.example.spark.sql.util.{CompletionIterator, HBaseUtils, ThriftSerde}
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
@@ -466,7 +466,7 @@ object HBaseRDD_0 extends Logging {
     val (hbaseFilterList, valueCondition) = buildRowkeyAndValueFilter(hbaseOptions.rowkeyTransfer, filters)
 
     val avroSchema = new Schema.Parser().parse(hbaseOptions.tableAvsc)
-    val schema = AvroSchema.transferAvroSchema(avroSchema)
+    val schema = AvroSchemaConverter.transferAvroSchema(avroSchema)
 
     val avroFilter = new SingleAvroFilter(hbaseOptions.family.getBytes(Charset.forName("utf-8")),
       hbaseFilterList, valueCondition, hbaseOptions.tableAvsc)

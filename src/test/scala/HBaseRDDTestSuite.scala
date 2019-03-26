@@ -8,6 +8,7 @@ import com.example.spark.sql.execution.optimizer.{HBaseStatisOptimizationRule, H
 import com.example.spark.sql.util.Serde
 import org.apache.hadoop.hbase.filter
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.{DataFrameReader, SparkSession}
 import org.apache.spark.sql.sources.{And, EqualTo, Filter, Or}
 import org.scalatest.BeforeAndAfter
@@ -271,14 +272,23 @@ object HBaseRDDTestSuite {
     val sqljoin = "select a2.*, a1.* from avro2 a2 inner join avro1 a1 on a1.table = a2.name where a1.table='table1'"
     val subdf = sparkSession.sqlContext.sql(sqljoin)
 
-    println(subdf.queryExecution.logical)
-    println(subdf.queryExecution.analyzed)
-    //subdf.queryExecution.analyzed
-    println(subdf.queryExecution.optimizedPlan)
-    println(subdf.queryExecution.executedPlan)
-    println(subdf.queryExecution.sparkPlan)
+    val catalog = sparkSession.sessionState.catalog
+    //TODO: catalog 暂时不考虑
+    val sourceTableDesc1 = catalog.getTempViewOrPermanentTableMetadata(TableIdentifier("avro1"))
+    println(sourceTableDesc1)
 
-    subdf.write.csv()
+    val sourceTableDesc2 = catalog.getTempViewOrPermanentTableMetadata(TableIdentifier("avro2"))
+    println(sourceTableDesc2)
+
+    //println(subdf.queryExecution.logical)
+    //println(subdf.queryExecution.analyzed)
+    //subdf.queryExecution.analyzed
+    //println(subdf.queryExecution.optimizedPlan)
+    //println(subdf.queryExecution.executedPlan)
+    //println(subdf.queryExecution.sparkPlan)
+    subdf.explain(true)
+
+    //subdf.write.csv()
     //subdf.show()
   }
 

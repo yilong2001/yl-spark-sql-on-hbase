@@ -1,6 +1,6 @@
 package com.example.spark.demo.impl.cmp;
 
-import com.example.spark.sql.util.ORMUtil;
+import com.example.spark.sql.util.ORMUtils;
 
 import java.io.Serializable;
 
@@ -17,8 +17,8 @@ public abstract class NumberCompator implements ValueCompator,Serializable {
 
     @Override
     public int compare(Object element) {
-        Object value = ORMUtil.getSqlFieldValue(element, field);
-        Class type = ORMUtil.getSqlFieldType(element, field);
+        Object value = ORMUtils.getSqlFieldValue(element, field);
+        Class type = ORMUtils.getSqlFieldType(element, field);
 
         if (type.getCanonicalName().equals("java.lang.String")) {
             return value.toString().compareTo(target.toString());

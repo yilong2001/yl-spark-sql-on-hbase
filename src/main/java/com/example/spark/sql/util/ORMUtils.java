@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 /**
  * Created by yilong on 2018/6/10.
  */
-public class ORMUtil {
-    private static Logger logger = Logger.getLogger(Serde.class);
+public class ORMUtils {
+    private static Logger logger = Logger.getLogger(ORMUtils.class);
 
     public static Object getFieldObj(Object element, String fieldName) throws IllegalAccessException {
         Class clazz = element.getClass();
@@ -71,7 +71,7 @@ public class ORMUtil {
         Field[] fields = clazz.getDeclaredFields();
         for (Field fd : fields) {
             if (fd.getName().equals(sqlField)) {
-                System.out.println(sqlField+" type : "+fd.getType().toGenericString());
+                logger.info(sqlField+" type : "+fd.getType().toGenericString());
                 fd.setAccessible(true);
                 try {
                     return fd.get(element);
@@ -186,7 +186,18 @@ public class ORMUtil {
                 return null;
             }
 
-            //TODO: UNION 类型待支持
+            //TODO: UNION 类型 : 仅支持 type:["null","record"]
+            if (subschema.getType().getName().equals(Schema.Type.UNION.getName())) {
+                List<Schema> subtypes = subschema.getTypes();
+                if (subtypes.size() != 2) {
+                    return null;
+                }
+
+                subschema = subtypes.get(0);
+                if (subtypes.get(0).getName().equals(Schema.Type.NULL.getName())) {
+                    subschema = subtypes.get(1);
+                }
+            }
 
             if (subschema.getType().getName().equals(Schema.Type.MAP.getName())) {
                 subschema = subschema.getValueType();
@@ -278,7 +289,6 @@ public class ORMUtil {
         public TestSub[] tss;
         public Map<String, TestSub> mts;
     }
-
 
     public static void testComposeFieldAnalysis() {
         System.out.println(isMapField("c['a1']"));

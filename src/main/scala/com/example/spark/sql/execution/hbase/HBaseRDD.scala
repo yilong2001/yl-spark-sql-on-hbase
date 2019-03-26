@@ -11,7 +11,7 @@ import com.example.spark.demo.impl.transfer.FieldValuePair.FieldCompareType
 import com.example.spark.demo.impl.transfer.RowKeyTransfer.RowkeyFieldSortType
 import com.example.spark.demo.impl.transfer.{ConcatTransfer, FieldValuePair, RowKeyTransfer, ValueTransfer}
 import com.example.spark.hbase.filter.{SingleAvroFilter, SingleThriftFilter}
-import com.example.spark.sql.execution.avro.AvroSchema
+import com.example.spark.sql.execution.avro.AvroSchemaConverter
 import com.example.spark.sql.execution.hbase.HBaseRDD.buildRowkeyAndValueFilter
 import com.example.spark.sql.util.{CompletionIterator, HBaseUtils, ThriftSerde}
 import org.apache.avro.Schema
@@ -78,13 +78,18 @@ object HBaseRDD extends Logging {
     }
   }
 
+  /*
+  * support sql condition:
+  * id > 5 and id < 10
+  * (id > 5 and id < 10) or (id > 15 and id < 20)
+  * id == 5 or id == 10 or id == 15
+  *
+  * now, don't support:
+  * id in [5, 10, 15]
+  *
+  * */
   def compileSqlQueryFilters(filterListsIn: util.List[util.List[Filter]],
                              filterListsOut: util.List[util.List[Filter]]) : Unit = {
-    // id > 5 and id < 10 ?
-    // (id > 5 and id < 10) or (id > 15 and id < 20) ?
-    // id == 5 or id == 10 or id == 15
-    // now, do not support id in [5, 10, 15]
-
     val pendingList = new util.ArrayList[util.List[Filter]]()
 
     filterListsIn.asScala.foreach(tt => {
@@ -170,9 +175,11 @@ object HBaseRDD extends Logging {
     compileSqlQueryFilters(filterListsIn, filterListsOut)
   }
 
+  /*
+  *
+  * */
   def transferFilter(f : Filter) : Option[FieldValuePair] = {
-    //这里，attr可能是组合属性：例如：arr[0].x.y
-    //对于组合属性，需要考虑
+    //TODO: 这里，attr可能是组合属性：例如：arr[0].x.y;
     Option(f match {
       case EqualTo(attr, value) => {
         new FieldValuePair(attr, value.toString, FieldValuePair.FieldCompareType.Cmp_Equal)
@@ -484,7 +491,7 @@ class HBaseRDD(sc: SparkContext,
 
   hbaserdd =>
 
-  final val schema = AvroSchema.transferAvroSchema(new Schema.Parser().parse(options.tableAvsc)).asInstanceOf[StructType]
+  final val schema = AvroSchemaConverter.transferAvroSchema(new Schema.Parser().parse(options.tableAvsc)).asInstanceOf[StructType]
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
     var closed = false

@@ -5,10 +5,11 @@ import java.util.{ArrayList, HashMap, List}
 import MYSCH2.{TAB2, columns}
 import com.example.spark.demo.impl.cmp.{EqualCompator, ValueCondition}
 import com.example.spark.demo.impl.transfer.{RowKeyTransfer, ValueTransfer}
+import com.example.spark.generated.avro.ot1.ot1
 import com.example.spark.hbase.filter.SingleAvroFilter
-import com.example.spark.sql.execution.avro.{AvroConverter, AvroSchema}
+import com.example.spark.sql.execution.avro.{AvroDataConverter, AvroDataPlainConverter, AvroSchemaConverter, AvroSchemaPlainConverter}
 import com.example.spark.sql.execution.hbase.{HBaseOptions, HBaseRDD, HBaseRelationProvider}
-import com.example.spark.sql.util.{ORMUtil, Serde}
+import com.example.spark.sql.util.{ORMUtils, Serde}
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericData, GenericDatumReader, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io._
@@ -18,7 +19,7 @@ import org.apache.hadoop.hbase.util.Bytes
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.sources.{And, EqualTo, Filter, Or}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StructField, StructType}
 
 
 /**
@@ -29,21 +30,21 @@ object AvroTestUtils {
   def testAvroTransferSchema_1() : Unit = {
     val userAvsc = "{\"namespace\": \"com.example.spark.demo.generated.avro\",\n" + " \"type\": \"record\",\n" + " \"name\": \"User\",\n" + " \"fields\": [\n" + "     {\"name\": \"name\", \"type\": \"string\"},\n" + "     {\"name\": \"favorite_number\",  \"type\": [\"int\", \"null\"]},\n" + "     {\"name\": \"favorite_color\", \"type\": [\"string\", \"null\"]}, \n" + "     {\"name\": \"colr\",\"type\": {\"type\": \"enum\", \"name\": \"Color\", \"symbols\" : [\"WHITE\", \"RED\", \"GREEN\"] } }, \n" + "     {\"name\": \"arr\", \"type\": {\"type\": \"array\", \"items\": \"string\"}} " + "]}"
     val schema = new Schema.Parser().parse(userAvsc)
-    val st = AvroSchema.transferAvroSchema(schema)
+    val st = AvroSchemaConverter.transferAvroSchema(schema)
     println(st)
   }
 
   def testAvroTransferSchema_2() : Unit = {
     val avsc = "{\"type\": \"array\",\n \"items\":{\n   \"type\":\"record\",\n   \"name\":\"products\",\n     \"fields\": [\n         {\"name\": \"product_seris\", \"type\": \"string\"},\n         {\"name\": \"product_name\", \"type\": \"string\"},\n         {\"name\": \"prices\", \"type\":\n            {\"type\": \"array\",\n                \"items\":{\n                    \"type\":\"record\",\n                    \"name\" : \"price\",\n                    \"fields\":[\n                      {\"name\":\"model\",\"type\":\"string\"},\n                      {\"name\":\"price\",\"type\":\"float\"}\n                    ]}\n              }\n         }\n     ]\n }\n}"
     val schema = new Schema.Parser().parse(avsc)
-    val st = AvroSchema.transferAvroArraySchema(schema)
+    val st = AvroSchemaConverter.transferAvroArraySchema(schema)
     println(st)
   }
 
   def testAvroTransferSchema_3() : Unit = {
     val avsc = "{\n  \"type\" : \"record\",\n  \"name\" : \"TAB2\",\n  \"namespace\" : \"MYSCH2\",\n  \"fields\" : [ {\n    \"name\" : \"table\",\n    \"type\" : \"string\"\n  }, {\n    \"name\" : \"op_type\",\n    \"type\" : \"string\"\n  }, {\n    \"name\" : \"op_ts\",\n    \"type\" : \"string\"\n  }, {\n    \"name\" : \"current_ts\",\n    \"type\" : \"string\"\n  }, {\n    \"name\" : \"pos\",\n    \"type\" : \"string\"\n  }, {\n    \"name\" : \"primary_keys\",\n    \"type\" : {\n      \"type\" : \"array\",\n      \"items\" : \"string\"\n    }\n  }, {\n    \"name\" : \"tokens\",\n    \"type\" : {\n      \"type\" : \"map\",\n      \"values\" : \"string\"\n    },\n    \"default\" : { }\n  }, {\n    \"name\" : \"before\",\n    \"type\" : [ \"null\", {\n      \"type\" : \"record\",\n      \"name\" : \"columns\",\n      \"fields\" : [ {\n        \"name\" : \"ID\",\n        \"type\" : [ \"null\", \"string\" ],\n        \"default\" : null\n      }, {\n        \"name\" : \"ID_isMissing\",\n        \"type\" : \"boolean\"\n      }, {\n        \"name\" : \"NAME\",\n        \"type\" : [ \"null\", \"string\" ],\n        \"default\" : null\n      }, {\n        \"name\" : \"NAME_isMissing\",\n        \"type\" : \"boolean\"\n      } ]\n    } ],\n    \"default\" : null\n  }, {\n    \"name\" : \"after\",\n    \"type\" : [ \"null\", \"columns\" ],\n    \"default\" : null\n  } ]\n}"
     val schema = new Schema.Parser().parse(avsc)
-    val st = AvroSchema.transferAvroSchema(schema)
+    val st = AvroSchemaConverter.transferAvroSchema(schema)
     println(st)
   }
 
@@ -112,10 +113,11 @@ object AvroTestUtils {
     val decoder = DecoderFactory.get.binaryDecoder(out.toByteArray, null)
     val result = datumReader.read(null, decoder)
 
-    val st = AvroSchema.transferAvroSchema(schema)
+    val st = AvroSchemaConverter.transferAvroSchema(schema)
 
-    val row = AvroConverter.convert(result, st.asInstanceOf[StructType])
+    val row = AvroDataConverter.convert(result, st.asInstanceOf[StructType])
 
+    println(st)
     println(row)
   }
 
@@ -168,7 +170,10 @@ object AvroTestUtils {
     val field3 = "after.NAME"
     val field = field3
     val schema = element.asInstanceOf[GenericRecord].getSchema
-    println(ORMUtil.getAvroFieldType(schema, field))
+    println(ORMUtils.getAvroFieldType(schema, field0))
+    println(ORMUtils.getAvroFieldType(schema, field1))
+    println(ORMUtils.getAvroFieldType(schema, field2))
+    println(ORMUtils.getAvroFieldType(schema, field3))
   }
 
   def testAvroHBaseFilter(): Unit = {
@@ -203,13 +208,63 @@ object AvroTestUtils {
     assert(newavrofilter.getAvsc.equals(avrofilter.getAvsc.toString))
   }
 
+  def testPlainConvert1() : Unit = {
+    val composedSchemaStr = "{\"namespace\": \"com.example.spark.generated.avro.ot1\",\"type\":\"record\",\"name\":\"ot1\"," +
+      "\"fields\":[{\"name\":\"table\",\"type\":\"string\"}," +
+      "{\"name\":\"op_type\",\"type\":\"string\"}," +
+      "{\"name\":\"before\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"columns\"," +
+      "\"fields\":["+
+      "{\"name\":\"nick\",\"type\":[\"string\",\"null\"],\"default\":\"null\"}," +
+      "{\"name\":\"grade\",\"type\":[\"int\",\"null\"],\"default\":\"null\"}," +
+      "{\"name\":\"uid\",\"type\":[\"string\",\"null\"],\"default\":\"null\"}]}],\"default\":\"null\"}," +
+      "{\"name\":\"after\",\"type\":[\"columns\",\"null\"],\"default\":\"null\"}]}";
+
+    val schema = new Schema.Parser().parse(composedSchemaStr)
+
+    val ot1 = new ot1()
+    val bcol = new com.example.spark.generated.avro.ot1.columns()
+    val acol = new com.example.spark.generated.avro.ot1.columns()
+
+    ot1.setTable("table_"+0)
+    ot1.setOpType("I")
+    bcol.setGrade(0)
+    bcol.setNick("nick_"+0)
+    bcol.setUid("uid_"+0)
+
+    acol.setGrade(10)
+    acol.setNick("nick_"+10)
+    acol.setUid("uid_"+10)
+
+    //ot1.setAfter(acol)
+    ot1.setBefore(bcol)
+
+    val datumWriter = new GenericDatumWriter[GenericRecord](schema)
+    val out = new ByteArrayOutputStream
+    val encoder = EncoderFactory.get.binaryEncoder(out, null)
+    datumWriter.write(ot1, encoder)
+    encoder.flush()
+    out.close()
+
+    val datumReader = new GenericDatumReader[GenericRecord](schema)
+    //DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(file, datumReader);
+    val decoder = DecoderFactory.get.binaryDecoder(out.toByteArray, null)
+    val result = datumReader.read(null, decoder)
+
+    val st = AvroSchemaPlainConverter.convert(schema)
+    println(st)
+
+    val rd = AvroDataPlainConverter.convert(result, st)
+    println(rd)
+  }
+
   def main(args: Array[String]): Unit = {
-    //testAvroTransferSchema_1()
-    //testAvroTransferSchema_2()
-    //testAvroTransferSchema_3()
+    testAvroTransferSchema_1()
+    testAvroTransferSchema_2()
+    testAvroTransferSchema_3()
     testAvroConverter_1()
-    //testAvroFilter()
-    //testAvroSchema()
+    testAvroFilter()
+    testAvroSchema()
     //testAvroHBaseFilter()
+    testPlainConvert1()
   }
 }

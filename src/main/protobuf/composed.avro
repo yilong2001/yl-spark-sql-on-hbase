@@ -1,0 +1,13 @@
+{"namespace": "com.example.streaming.generated.avro",
+ "type":"record",
+ "name":"ot1",
+ "fields":[
+    {"name":"table","type":"string"},
+    {"name":"op_type","type":"string"},
+    {"name":"before",
+      "type":["null",{"type":"record","name":"columns", "fields":[
+      {"name":"nick","type":["string","null"],"default":"null"},
+      {"name":"grade","type":["int","null"],"default":"null"},
+      {"name":"uid","type":["string","null"],"default":"null"}]}],
+      "default":null},
+    {"name":"after","type":["null","columns"],"default":"null"}]}

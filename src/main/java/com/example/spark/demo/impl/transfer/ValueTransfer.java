@@ -1,6 +1,6 @@
 package com.example.spark.demo.impl.transfer;
 
-import com.example.spark.sql.util.ORMUtil;
+import com.example.spark.sql.util.ORMUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ValueTransfer extends RowKeyTransfer implements Serializable {
 
     @Override
     public String transfer(Object element) {
-        return ORMUtil.getSqlFieldValue(element, field).toString();
+        return ORMUtils.getSqlFieldValue(element, field).toString();
     }
 
     @Override

@@ -22,7 +22,7 @@ import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
 
 import com.example.spark.sql.execution.convert._
-import com.example.spark.sql.util.ORMUtil
+import com.example.spark.sql.util.ORMUtils
 
 import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.internal.Logging
@@ -98,7 +98,7 @@ class ThriftRowConverter(parentUp: RowUpdater, catalystType: StructType) extends
   BasicRowConverter(parentUp, catalystType) {
 
   override def getObject(obj: Any, fieldname: String): Any = {
-    ORMUtil.getFieldObj(obj, fieldname)
+    ORMUtils.getFieldObj(obj, fieldname)
   }
 
   override def buildConverter(ru: RowUpdater, dt: DataType, fieldName: String): ParentConverter = {

@@ -2,13 +2,11 @@ package com.example.spark.demo.client;
 
 import MYSCH2.TAB2;
 import MYSCH2.columns;
-import com.example.spark.demo.impl.cmp.EqualCompator;
 import com.example.spark.demo.impl.cmp.ValueCondition;
 import com.example.spark.demo.impl.transfer.RowKeyTransfer;
 import com.example.spark.demo.impl.transfer.ValueTransfer;
 import com.example.spark.hbase.coprocessor.SingleSqlCountClient;
 import com.example.spark.hbase.filter.SingleAvroFilter;
-import com.example.spark.sql.util.ORMUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -19,7 +17,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.filter.RowFilter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

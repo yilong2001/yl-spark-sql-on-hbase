@@ -1,4 +1,4 @@
-import com.example.spark.sql.util.ORMUtil;
+import com.example.spark.sql.util.ORMUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -68,8 +68,8 @@ public class JAvroTest {
         GenericRecord result = datumReader.read(null,decoder);
 
         Assert.assertNotEquals(result, null);
-        Assert.assertEquals(ORMUtil.getSqlFieldValue(result, "name").toString(), "Ben");
-        Assert.assertEquals(ORMUtil.getSqlFieldValue(result, "arr[1]").toString(), "2");
+        Assert.assertEquals(ORMUtils.getSqlFieldValue(result, "name").toString(), "Ben");
+        Assert.assertEquals(ORMUtils.getSqlFieldValue(result, "arr[1]").toString(), "2");
         Assert.assertEquals(result.get("name").toString(), "Ben");
         Assert.assertEquals(((java.util.Collection)result.get("arr")).toArray()[1].toString(), "2");
     }

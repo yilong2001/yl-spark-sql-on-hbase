@@ -3,7 +3,7 @@ package com.example.spark.sql.execution.hbase
 import java.nio.ByteBuffer
 
 import com.example.spark.hbase.coprocessor.SingleSqlCountStatis
-import com.example.spark.sql.execution.avro.AvroSchema
+import com.example.spark.sql.execution.avro.AvroSchemaConverter
 import com.example.spark.sql.util.HBaseUtils
 import org.apache.avro.Schema
 import org.apache.spark.Partition
@@ -71,7 +71,7 @@ case class HBaseRelation(parts: Array[Partition],
     s"HBaseRelation(${hbaseOptions.table})" + partitioningInfo
   }
 
-  override def schema: StructType = AvroSchema.transferAvroSchema(new Schema.Parser().parse(hbaseOptions.tableAvsc)).asInstanceOf[StructType]
+  override def schema: StructType = AvroSchemaConverter.transferAvroSchema(new Schema.Parser().parse(hbaseOptions.tableAvsc)).asInstanceOf[StructType]
   //HBaseUtils.convertThriftSchema(hbaseOptions.valueClassName)
 
   override def insert(data: DataFrame, overwrite: Boolean): Unit = {

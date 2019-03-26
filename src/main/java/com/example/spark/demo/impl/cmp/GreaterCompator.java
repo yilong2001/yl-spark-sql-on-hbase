@@ -1,7 +1,5 @@
 package com.example.spark.demo.impl.cmp;
 
-import com.example.spark.sql.util.ORMUtil;
-
 import java.io.Serializable;
 
 /**
