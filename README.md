@@ -30,5 +30,3 @@ transient 对象不会序列化，RDD 作为任务的一部分被序列化的时
 
 ## 8、重定义 hbaserelation  sizeInBytes 接口
 
-## 交流
-wx: yilong2001
